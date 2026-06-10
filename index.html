@@ -1,0 +1,1020 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Code, 
+  Eye, 
+  Edit3, 
+  Laptop, 
+  Tablet, 
+  Smartphone, 
+  Download, 
+  Copy, 
+  RotateCcw, 
+  RotateCw, 
+  FileText, 
+  Image as ImageIcon, 
+  Upload, 
+  Layers, 
+  Check, 
+  Sparkles,
+  HelpCircle,
+  X,
+  Play
+} from 'lucide-react';
+
+// --- НАЧАЛЬНЫЕ ШАБЛОНЫ САЙТОВ ---
+
+const TEMPLATES = {
+  saas: `<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaaS Платформа будущего</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+    <!-- Шапка -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl font-bold bg-gradient-to-r from-blue-500 to-indigo-400 bg-clip-text text-transparent">NexusApp</span>
+            </div>
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+                <a href="#features" class="hover:text-white transition-colors">Функции</a>
+                <a href="#pricing" class="hover:text-white transition-colors">Цены</a>
+                <a href="#about" class="hover:text-white transition-colors">О нас</a>
+            </nav>
+            <button class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-blue-500/20">
+                Начать бесплатно
+            </button>
+        </div>
+    </header>
+
+    <!-- Главный экран -->
+    <section class="max-w-6xl mx-auto px-6 pt-20 pb-16 text-center">
+        <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            Встречайте обновление 2.0 ✨
+        </span>
+        <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-white mt-8 mb-6 leading-tight">
+            Управляйте проектами <br>
+            <span class="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">в один клик</span>
+        </h1>
+        <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Интеллектуальная система контроля задач, которая автоматизирует рутину и помогает вашей команде работать на 40% эффективнее.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+            <button class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-semibold transition-all shadow-xl shadow-blue-500/20">
+                Создать личный кабинет
+            </button>
+            <button class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-slate-200 px-8 py-4 rounded-xl font-semibold transition-all">
+                Посмотреть демо
+            </button>
+        </div>
+
+        <!-- Ключевое изображение -->
+        <div class="relative rounded-2xl border border-slate-800 bg-slate-900/80 p-4 max-w-4xl mx-auto shadow-2xl">
+            <img id="hero-img" src="https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1200&q=80" alt="Интерфейс платформы" class="rounded-xl w-full object-cover aspect-[16/9]" />
+        </div>
+    </section>
+
+    <!-- Преимущества -->
+    <section id="features" class="max-w-7xl mx-auto px-6 py-24 border-t border-slate-900">
+        <div class="text-center max-w-2xl mx-auto mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Почему выбирают NexusApp?</h2>
+            <p class="text-slate-400">Всё необходимое для гибкого управления разработкой и бизнес-процессами.</p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Карта 1 -->
+            <div class="p-8 rounded-2xl border border-slate-800 bg-slate-900/40 hover:border-blue-500/30 transition-all group">
+                <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 mb-6 group-hover:bg-blue-500 group-hover:text-white transition-all">
+                    ⚡
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">Молниеносная скорость</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">Никаких задержек. Все изменения синхронизируются в реальном времени между всеми участниками.</p>
+            </div>
+            <!-- Карта 2 -->
+            <div class="p-8 rounded-2xl border border-slate-800 bg-slate-900/40 hover:border-indigo-500/30 transition-all group">
+                <div class="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 mb-6 group-hover:bg-indigo-500 group-hover:text-white transition-all">
+                    🧠
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">Умный AI-помощник</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">Искусственный интеллект автоматически распределяет задачи по приоритету и предсказывает сроки дедлайнов.</p>
+            </div>
+            <!-- Карта 3 -->
+            <div class="p-8 rounded-2xl border border-slate-800 bg-slate-900/40 hover:border-purple-500/30 transition-all group">
+                <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 mb-6 group-hover:bg-purple-500 group-hover:text-white transition-all">
+                    🛡️
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">Безопасность данных</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">Шифрование военного уровня гарантирует защиту коммерческой информации и конфиденциальность переписок.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Подвал -->
+    <footer class="border-t border-slate-900 bg-slate-950 py-12 text-center text-slate-500 text-sm">
+        <p>© 2026 NexusApp Inc. Все права защищены. Разработано с любовью.</p>
+    </footer>
+</body>
+</html>`,
+
+  portfolio: `<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Алексей Иванов — UX/UI Дизайнер</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-zinc-50 text-zinc-900 min-h-screen">
+    <!-- Навигация -->
+    <nav class="max-w-5xl mx-auto px-6 py-8 flex justify-between items-center">
+        <div class="text-xl font-bold tracking-tight">А.ИВАНОВ</div>
+        <div class="flex gap-8 text-sm font-medium text-zinc-600">
+            <a href="#work" class="hover:text-black transition-colors">Работы</a>
+            <a href="#about" class="hover:text-black transition-colors">Обо мне</a>
+            <a href="#contact" class="hover:text-black transition-colors">Контакты</a>
+        </div>
+    </nav>
+
+    <!-- Главный блок -->
+    <header class="max-w-5xl mx-auto px-6 pt-16 pb-24 grid md:grid-cols-2 gap-12 items-center">
+        <div>
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-zinc-900 mb-6 leading-tight">
+                Создаю цифровые интерфейсы, которые <span class="text-zinc-400 underline decoration-zinc-300">влюбляют</span> в себя пользователей.
+            </h1>
+            <p class="text-zinc-600 text-lg mb-8 leading-relaxed">
+                Привет! Я продуктовый дизайнер с 5-летним опытом разработки мобильных приложений и веб-сервисов для ведущих стартапов.
+            </p>
+            <div class="flex gap-4">
+                <a href="#work" class="bg-zinc-900 hover:bg-zinc-800 text-white px-6 py-3 rounded-full font-medium transition-colors">
+                    Посмотреть проекты
+                </a>
+                <a href="#contact" class="border border-zinc-300 hover:border-zinc-800 text-zinc-700 px-6 py-3 rounded-full font-medium transition-colors">
+                    Связаться
+                </a>
+            </div>
+        </div>
+        <div class="flex justify-center">
+            <div class="relative w-80 h-80 rounded-full overflow-hidden bg-zinc-200 border-4 border-white shadow-xl">
+                <img id="avatar-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80" alt="Алексей" class="w-full h-full object-cover" />
+            </div>
+        </div>
+    </header>
+
+    <!-- Галерея проектов -->
+    <main id="work" class="bg-zinc-100 py-20 border-t border-zinc-200">
+        <div class="max-w-5xl mx-auto px-6">
+            <h2 class="text-2xl font-bold mb-12 text-zinc-800">Избранные проекты</h2>
+            
+            <div class="grid md:grid-cols-2 gap-10">
+                <!-- Карточка проекта 1 -->
+                <div class="group cursor-pointer">
+                    <div class="overflow-hidden rounded-2xl bg-zinc-200 mb-4 shadow-sm group-hover:shadow-md transition-all">
+                        <img id="project-1" src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80" alt="Финансовый дашборд" class="w-full aspect-[4/3] object-cover group-hover:scale-105 transition-all duration-300" />
+                    </div>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">FinTech</span>
+                    <h3 class="text-lg font-bold text-zinc-900 mt-1">Payflow — Мобильный кошелек</h3>
+                    <p class="text-zinc-600 text-sm mt-2">Редизайн мобильного приложения для мгновенных переводов и ведения личного бюджета.</p>
+                </div>
+
+                <!-- Карточка проекта 2 -->
+                <div class="group cursor-pointer">
+                    <div class="overflow-hidden rounded-2xl bg-zinc-200 mb-4 shadow-sm group-hover:shadow-md transition-all">
+                        <img id="project-2" src="https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80" alt="E-commerce дизайн" class="w-full aspect-[4/3] object-cover group-hover:scale-105 transition-all duration-300" />
+                    </div>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">E-Commerce</span>
+                    <h3 class="text-lg font-bold text-zinc-900 mt-1">Bloom — Онлайн-магазин</h3>
+                    <p class="text-zinc-600 text-sm mt-2">Проектирование минималистичного маркетплейса дизайнерской одежды и аксессуаров.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Подвал -->
+    <footer id="contact" class="max-w-5xl mx-auto px-6 py-16 text-center border-t border-zinc-200">
+        <h2 class="text-xl font-bold mb-4">Давайте работать вместе!</h2>
+        <p class="text-zinc-500 mb-6">Жду ваших предложений по адресу: alex.ivanov@example.com</p>
+        <div class="text-xs text-zinc-400">© 2026 Алексей Иванов.</div>
+    </footer>
+</body>
+</html>`,
+
+  cafe: `<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bistro Verde — Свежая кухня</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Playfair Display', serif; }
+    </style>
+</head>
+<body class="bg-amber-50/50 text-stone-800 min-h-screen">
+    <!-- Навигация -->
+    <nav class="border-b border-amber-100 bg-white/95 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <span class="text-2xl font-bold text-emerald-800 tracking-wider">BISTRO VERDE</span>
+            <div class="hidden sm:flex gap-8 text-sm font-semibold text-stone-600">
+                <a href="#menu" class="hover:text-emerald-800 transition-colors">Menu</a>
+                <a href="#about" class="hover:text-emerald-800 transition-colors">О нас</a>
+                <a href="#contacts" class="hover:text-emerald-800 transition-colors">Контакты</a>
+            </div>
+            <button class="bg-emerald-800 hover:bg-emerald-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                Заказать столик
+            </button>
+        </div>
+    </nav>
+
+    <!-- Баннер -->
+    <section class="max-w-6xl mx-auto px-6 py-16 md:py-24 grid md:grid-cols-2 gap-12 items-center">
+        <div>
+            <span class="text-xs font-bold text-emerald-800 uppercase tracking-widest bg-emerald-50 px-3 py-1.5 rounded">
+                Ресторан здоровой еды
+            </span>
+            <h1 class="text-4xl md:text-5xl font-serif font-bold text-stone-900 mt-6 mb-6 leading-tight">
+                Настоящий вкус природы в каждой тарелке
+            </h1>
+            <p class="text-stone-600 text-base md:text-lg mb-8 leading-relaxed">
+                Мы используем только фермерские ингредиенты, выращенные без пестицидов и бережно доставленные на нашу кухню каждое утро. Попробуйте авторские шедевры от шеф-повара.
+            </p>
+            <div class="flex gap-4">
+                <a href="#menu" class="bg-emerald-800 hover:bg-emerald-900 text-white px-6 py-3.5 rounded-lg font-medium transition-colors">
+                    Посмотреть меню
+                </a>
+                <a href="#about" class="border border-stone-300 hover:border-stone-800 text-stone-700 px-6 py-3.5 rounded-lg font-medium transition-colors">
+                    Наша история
+                </a>
+            </div>
+        </div>
+        <div class="relative">
+            <img id="cafe-hero" src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80" alt="Полезный салат" class="rounded-2xl shadow-xl w-full object-cover aspect-square" />
+        </div>
+    </section>
+
+    <!-- Популярное из меню -->
+    <section id="menu" class="bg-white py-20 border-t border-amber-100">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center max-w-xl mx-auto mb-16">
+                <h2 class="text-3xl font-serif font-bold text-stone-900 mb-4">Популярно сегодня</h2>
+                <p class="text-stone-500">Наши фирменные блюда, за которыми возвращаются снова и снова.</p>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Блюдо 1 -->
+                <div class="border border-stone-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <img id="dish-1" src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80" alt="Зеленый салат" class="w-full aspect-video object-cover" />
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="font-bold text-lg text-stone-900">Салат "Органик"</h3>
+                            <span class="text-emerald-800 font-bold">590 ₽</span>
+                        </div>
+                        <p class="text-stone-500 text-sm">Свежий авокадо, шпинат, семена тыквы, бобы эдамаме под фирменным соусом юдзу.</p>
+                    </div>
+                </div>
+
+                <!-- Блюдо 2 -->
+                <div class="border border-stone-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <img id="dish-2" src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80" alt="Поке" class="w-full aspect-video object-cover" />
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="font-bold text-lg text-stone-900">Поке с лососем</h3>
+                            <span class="text-emerald-800 font-bold">720 ₽</span>
+                        </div>
+                        <p class="text-stone-500 text-sm">Филе дикого лосося, киноа, свежий огурец, водоросли чука, кунжутная заправка.</p>
+                    </div>
+                </div>
+
+                <!-- Блюдо 3 -->
+                <div class="border border-stone-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <img id="dish-3" src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80" alt="Десерт" class="w-full aspect-video object-cover" />
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="font-bold text-lg text-stone-900">Raw-пирожное кокос</h3>
+                            <span class="text-emerald-800 font-bold">420 ₽</span>
+                        </div>
+                        <p class="text-stone-500 text-sm">Нежный веганский десерт из кешью-крема, кокосового молока и натурального сиропа топинамбура.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Подвал -->
+    <footer id="contacts" class="bg-stone-900 text-stone-300 py-12 text-center text-sm">
+        <p class="font-serif text-white text-lg mb-2">BISTRO VERDE</p>
+        <p class="text-stone-500 mb-4">г. Москва, ул. Лесная, д. 20 | Режим работы: ежедневно с 09:00 до 23:00</p>
+        <p>© 2026 Bistro Verde. Все права защищены.</p>
+    </footer>
+</body>
+</html>`
+};
+
+export default function App() {
+  // Состояния
+  const [htmlCode, setHtmlCode] = useState(TEMPLATES.saas);
+  const [currentTab, setCurrentTab] = useState('split'); // 'editor', 'preview', 'split'
+  const [responsiveMode, setResponsiveMode] = useState('desktop'); // 'desktop', 'tablet', 'mobile'
+  const [editModeActive, setEditModeActive] = useState(true); // true = режим редактирования контента, false = предпросмотр
+  
+  // Undo/Redo История
+  const [history, setHistory] = useState([TEMPLATES.saas]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+
+  // Редактирование изображений
+  const [selectedImg, setSelectedImg] = useState(null); // { imgId, currentSrc }
+  const [imageUrlInput, setImageUrlInput] = useState('');
+  
+  // Дополнительные фичи/состояния
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const iframeRef = useRef(null);
+
+  // Добавление изменений в историю с дебаунсом или ручным контролем
+  const updateHtmlCode = (newCode, addToHistory = true) => {
+    setHtmlCode(newCode);
+    if (addToHistory) {
+      const nextHistory = history.slice(0, historyIndex + 1);
+      setHistory([...nextHistory, newCode]);
+      setHistoryIndex(nextHistory.length);
+    }
+  };
+
+  // Слушатель сообщений от iframe
+  useEffect(() => {
+    const handleIframeMessages = (event) => {
+      const data = event.data;
+      if (!data) return;
+
+      if (data.type === 'HTML_UPDATED') {
+        // Очищаем код от внедренных инъекций перед сохранением обратно в редактор
+        let sanitizedHtml = data.html;
+        sanitizedHtml = removeInjectedScripts(sanitizedHtml);
+        updateHtmlCode(sanitizedHtml);
+      } else if (data.type === 'EDIT_IMAGE') {
+        setSelectedImg({ imgId: data.imgId, currentSrc: data.currentSrc });
+        setImageUrlInput(data.currentSrc);
+      }
+    };
+
+    window.addEventListener('message', handleIframeMessages);
+    return () => window.removeEventListener('message', handleIframeMessages);
+  }, [history, historyIndex]);
+
+  // Очистка HTML от скрипта визуального редактора для чистого экспорта
+  const removeInjectedScripts = (htmlStr) => {
+    let result = htmlStr;
+    // Удаляем наш <script> блок инъекции редактора
+    result = result.replace(/<script id="builder-editor-script"[\s\S]*?<\/script>/gi, '');
+    // Удаляем атрибуты contenteditable и designmode
+    result = result.replace(/\s*contenteditable="true"/gi, '');
+    result = result.replace(/\s*designmode="on"/gi, '');
+    // Удаляем временные outline стили
+    result = result.replace(/<style id="builder-editor-styles"[\s\S]*?<\/style>/gi, '');
+    return result;
+  };
+
+  // Показ тоста
+  const showToastMessage = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  // Загрузка нового шаблона
+  const handleLoadTemplate = (key) => {
+    const templateCode = TEMPLATES[key];
+    updateHtmlCode(templateCode);
+    showToastMessage(`Шаблон успешно загружен!`, 'success');
+  };
+
+  // Функция для отмены (Undo)
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      setHtmlCode(history[newIndex]);
+      showToastMessage('Отменено', 'info');
+    }
+  };
+
+  // Функция для повтора (Redo)
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      const newIndex = historyIndex + 1;
+      setHistoryIndex(newIndex);
+      setHtmlCode(history[newIndex]);
+      showToastMessage('Восстановлено', 'info');
+    }
+  };
+
+  // Копирование кода в буфер обмена
+  const handleCopyCode = () => {
+    try {
+      const cleanHtml = removeInjectedScripts(htmlCode);
+      // Используем надежный метод копирования для iframe сред
+      const textarea = document.createElement('textarea');
+      textarea.value = cleanHtml;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showToastMessage('Чистый HTML скопирован в буфер обмена!');
+    } catch (err) {
+      showToastMessage('Не удалось скопировать код', 'error');
+    }
+  };
+
+  // Скачивание файла
+  const handleDownloadFile = () => {
+    const cleanHtml = removeInjectedScripts(htmlCode);
+    const blob = new Blob([cleanHtml], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'my-custom-website.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToastMessage('Файл скачан! Откройте его в браузере.');
+  };
+
+  // Обновление картинки в iframe и коде
+  const handleSaveImageChange = () => {
+    if (!selectedImg) return;
+    
+    // Передаем сообщение в iframe о замене источника изображения
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      iframeRef.current.contentWindow.postMessage({
+        type: 'UPDATE_IMAGE_SRC',
+        imgId: selectedImg.imgId,
+        newSrc: imageUrlInput
+      }, '*');
+    }
+    
+    setSelectedImg(null);
+    showToastMessage('Изображение обновлено!');
+  };
+
+  // Сборка финального HTML для отображения в iframe с поддержкой визуального редактирования
+  const assembleSrcDoc = () => {
+    let baseCode = htmlCode;
+
+    // Встраиваем кастомный интерактивный скрипт редактора, если включен Edit Mode
+    const editorScript = `
+      <style id="builder-editor-styles">
+        /* Визуальный маркер редактируемых текстовых блоков */
+        [contenteditable="true"]:hover {
+          outline: 2px dashed #2563eb !important;
+          outline-offset: 4px;
+          cursor: text;
+        }
+        /* Стили для кликабельных изображений в режиме редактирования */
+        img {
+          cursor: pointer !important;
+          transition: all 0.2s ease-in-out !important;
+        }
+        img:hover {
+          outline: 3px solid #3b82f6 !important;
+          outline-offset: 2px;
+          filter: brightness(0.9) !important;
+        }
+        /* Предотвращение навигации по ссылкам в режиме редактирования */
+        a {
+          cursor: text !important;
+        }
+      </style>
+
+      <script id="builder-editor-script">
+        (function() {
+          // Инициализация режима редактирования
+          document.body.contentEditable = 'true';
+          document.designMode = 'on';
+
+          // Функция для чистки от ненужных оберток при отправке
+          function sendUpdatedHtml() {
+            window.parent.postMessage({
+              type: 'HTML_UPDATED',
+              html: document.documentElement.outerHTML
+            }, '*');
+          }
+
+          // Отслеживаем изменения ввода
+          document.body.addEventListener('input', function(e) {
+            sendUpdatedHtml();
+          });
+
+          // Специфический перехват кликов
+          document.body.addEventListener('click', function(e) {
+            // Блокируем ссылки в режиме редактирования
+            if (e.target.tagName === 'A' || e.target.closest('a')) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+
+            // Нажатие по картинке - отправляем запрос на редактирование родителю
+            if (e.target.tagName === 'IMG') {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              let imgId = e.target.id;
+              if (!imgId) {
+                imgId = 'img-' + Math.floor(Math.random() * 1000000);
+                e.target.id = imgId;
+              }
+
+              window.parent.postMessage({
+                type: 'EDIT_IMAGE',
+                imgId: imgId,
+                currentSrc: e.target.src
+              }, '*');
+            }
+          }, true);
+
+          // Прием обновлений от родителя
+          window.addEventListener('message', function(event) {
+            const msg = event.data;
+            if (msg.type === 'UPDATE_IMAGE_SRC') {
+              const targetImg = document.getElementById(msg.imgId);
+              if (targetImg) {
+                targetImg.src = msg.newSrc;
+                // Даем время на рендер и отправляем HTML обратно родителю
+                setTimeout(sendUpdatedHtml, 100);
+              }
+            }
+          });
+        })();
+      </script>
+    `;
+
+    if (editModeActive) {
+      // Ищем место для вставки скрипта в конце body
+      if (baseCode.includes('</body>')) {
+        baseCode = baseCode.replace('</body>', `${editorScript}</body>`);
+      } else {
+        baseCode += editorScript;
+      }
+    }
+
+    return baseCode;
+  };
+
+  return (
+    <div className="flex flex-col h-screen bg-slate-900 text-slate-100 font-sans overflow-hidden">
+      
+      {/* --- ШАПКА ПРИЛОЖЕНИЯ --- */}
+      <header className="flex flex-col md:flex-row md:items-center justify-between px-6 py-4 bg-slate-950 border-b border-slate-800 gap-4 shrink-0">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl shadow-lg shadow-indigo-500/10">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                РедакторКода.рф
+                <span className="text-xs px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/30">v1.2</span>
+              </h1>
+              <p className="text-xs text-slate-400">Интерактивный WYSIWYG конструктор сайтов на HTML5</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Настройки отображения и шаблоны */}
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
+            <Layers className="w-4 h-4 text-slate-400" />
+            <span className="text-xs font-semibold text-slate-300">Шаблоны:</span>
+            <button 
+              onClick={() => handleLoadTemplate('saas')}
+              className="text-xs px-2.5 py-1 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              🚀 SaaS лендинг
+            </button>
+            <span className="text-slate-700">|</span>
+            <button 
+              onClick={() => handleLoadTemplate('portfolio')}
+              className="text-xs px-2.5 py-1 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              💼 Портфолио
+            </button>
+            <span className="text-slate-700">|</span>
+            <button 
+              onClick={() => handleLoadTemplate('cafe')}
+              className="text-xs px-2.5 py-1 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              🥦 Кафе / Меню
+            </button>
+          </div>
+
+          <button 
+            onClick={() => setShowHelpModal(true)}
+            className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors"
+            title="Инструкция пользователя"
+          >
+            <HelpCircle className="w-5 h-5" />
+          </button>
+        </div>
+      </header>
+
+      {/* --- ПАНЕЛЬ ИНСТРУМЕНТОВ --- */}
+      <section className="flex flex-col sm:flex-row items-center justify-between px-6 py-3 bg-slate-900 border-b border-slate-800 gap-3 shrink-0">
+        
+        {/* Переключение вкладок рабочего пространства */}
+        <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800 w-full sm:w-auto">
+          <button 
+            onClick={() => setCurrentTab('editor')}
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-md text-xs font-medium transition-all ${
+              currentTab === 'editor' 
+                ? 'bg-blue-600 text-white shadow-md' 
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Code className="w-3.5 h-3.5" />
+            Только Код
+          </button>
+          <button 
+            onClick={() => setCurrentTab('split')}
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-md text-xs font-medium transition-all ${
+              currentTab === 'split' 
+                ? 'bg-blue-600 text-white shadow-md' 
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5" />
+            Код и Превью
+          </button>
+          <button 
+            onClick={() => setCurrentTab('preview')}
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-md text-xs font-medium transition-all ${
+              currentTab === 'preview' 
+                ? 'bg-blue-600 text-white shadow-md' 
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5" />
+            Только Превью
+          </button>
+        </div>
+
+        {/* Управление визуальным редактированием & Адаптивность */}
+        <div className="flex items-center flex-wrap gap-4 justify-between w-full sm:w-auto">
+          
+          {/* Режим: Редактирование текста vs Предпросмотр */}
+          <div className="flex items-center gap-2 bg-slate-950 p-1 rounded-lg border border-slate-800">
+            <button 
+              onClick={() => {
+                setEditModeActive(true);
+                showToastMessage('Включен режим визуального редактирования. Кликайте на текст и картинки!', 'info');
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                editModeActive 
+                  ? 'bg-emerald-600 text-white shadow-sm' 
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="Позволяет кликать по тексту и изменять его прямо в шаблоне"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              Редактор текста/фото
+            </button>
+            <button 
+              onClick={() => {
+                setEditModeActive(false);
+                showToastMessage('Включен режим живого сайта. Интерактивные элементы активны.', 'info');
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                !editModeActive 
+                  ? 'bg-blue-600 text-white shadow-sm' 
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="Переводит сайт в рабочий режим для проверки ссылок и скриптов"
+            >
+              <Play className="w-3.5 h-3.5" />
+              Живой предпросмотр
+            </button>
+          </div>
+
+          {/* Адаптивные экраны */}
+          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+            <button 
+              onClick={() => setResponsiveMode('desktop')}
+              className={`p-2 rounded-md text-xs transition-all ${
+                responsiveMode === 'desktop' ? 'bg-slate-800 text-blue-400' : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Широкий экран (Десктоп)"
+            >
+              <Laptop className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={() => setResponsiveMode('tablet')}
+              className={`p-2 rounded-md text-xs transition-all ${
+                responsiveMode === 'tablet' ? 'bg-slate-800 text-blue-400' : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Экран планшета"
+            >
+              <Tablet className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={() => setResponsiveMode('mobile')}
+              className={`p-2 rounded-md text-xs transition-all ${
+                responsiveMode === 'mobile' ? 'bg-slate-800 text-blue-400' : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Экран смартфона"
+            >
+              <Smartphone className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* История Undo / Redo и экспорт */}
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleUndo}
+              disabled={historyIndex === 0}
+              className="p-2 rounded-lg bg-slate-950 border border-slate-800 hover:bg-slate-800 disabled:opacity-40 transition-all text-slate-300"
+              title="Шаг назад (Undo)"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={handleRedo}
+              disabled={historyIndex >= history.length - 1}
+              className="p-2 rounded-lg bg-slate-950 border border-slate-800 hover:bg-slate-800 disabled:opacity-40 transition-all text-slate-300"
+              title="Шаг вперед (Redo)"
+            >
+              <RotateCw className="w-4 h-4" />
+            </button>
+            <span className="text-slate-700">|</span>
+            <button 
+              onClick={handleCopyCode}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition-colors"
+              title="Скопировать чистый HTML без скриптов редактора"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              Копировать HTML
+            </button>
+            <button 
+              onClick={handleDownloadFile}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-xs font-semibold text-white transition-colors shadow-lg shadow-blue-500/10"
+              title="Скачать файл .html на устройство"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Скачать .html
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      {/* --- РАБОЧАЯ ОБЛАСТЬ --- */}
+      <main className="flex-1 flex overflow-hidden relative">
+        
+        {/* ЛЕВЫЙ БЛОК: РЕДАКТОР КОДА */}
+        {(currentTab === 'editor' || currentTab === 'split') && (
+          <div className={`flex flex-col border-r border-slate-800 bg-slate-950 ${
+            currentTab === 'split' ? 'w-1/2' : 'w-full'
+          } h-full transition-all`}>
+            
+            <div className="flex items-center justify-between px-4 py-2 bg-slate-900 border-b border-slate-800 text-xs text-slate-400">
+              <span className="font-mono flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-blue-400" />
+                index.html
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Синхронизация активна</span>
+              </div>
+            </div>
+
+            <div className="flex-1 relative overflow-hidden font-mono text-sm leading-relaxed p-1 flex">
+              {/* Простая имитация нумерации строк */}
+              <div className="w-12 text-slate-600 text-right pr-3 select-none py-3 border-r border-slate-900 bg-slate-950/40 text-xs">
+                {Array.from({ length: Math.max(htmlCode.split('\n').length, 50) }).map((_, i) => (
+                  <div key={i}>{i + 1}</div>
+                ))}
+              </div>
+              
+              <textarea
+                value={htmlCode}
+                onChange={(e) => updateHtmlCode(e.target.value)}
+                className="flex-1 bg-transparent text-slate-300 focus:outline-none focus:ring-0 p-3 resize-none font-mono text-xs overflow-y-auto h-full w-full placeholder-slate-600"
+                spellCheck="false"
+                placeholder="Вставьте сюда свой HTML-код..."
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ПРАВЫЙ БЛОК: ИНТЕРАКТИВНЫЙ ПРЕДПРОСМОТР (IFRAME) */}
+        {(currentTab === 'preview' || currentTab === 'split') && (
+          <div className={`flex-1 flex flex-col bg-slate-900 relative h-full ${
+            currentTab === 'preview' ? 'w-full' : 'w-1/2'
+          }`}>
+            
+            {/* Описание режимов сверху */}
+            <div className="px-4 py-2 bg-slate-900/80 border-b border-slate-800/60 text-xs flex items-center justify-between">
+              <span className="text-slate-400 flex items-center gap-2">
+                {editModeActive ? (
+                  <>
+                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <strong className="text-emerald-400">Режим редактора:</strong> Кликните на любой текст для изменения, либо кликните на картинку для замены URL.
+                  </>
+                ) : (
+                  <>
+                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                    <strong className="text-blue-400">Предпросмотр:</strong> Интерактивный режим готового сайта. Все кнопки и ссылки кликабельны.
+                  </>
+                )}
+              </span>
+              <span className="text-slate-500 text-[10px] hidden sm:inline">
+                Размер адаптивности: {responsiveMode === 'desktop' ? '100% ширины' : responsiveMode === 'tablet' ? '768px' : '400px'}
+              </span>
+            </div>
+
+            {/* Контейнер адаптивности */}
+            <div className="flex-1 flex justify-center items-center bg-slate-900 p-4 overflow-auto">
+              <div 
+                className="h-full max-h-full transition-all duration-300 rounded-xl shadow-2xl bg-white border border-slate-800 overflow-hidden"
+                style={{
+                  width: responsiveMode === 'desktop' ? '100%' : responsiveMode === 'tablet' ? '768px' : '420px',
+                  maxWidth: '100%',
+                }}
+              >
+                <iframe
+                  ref={iframeRef}
+                  title="Live Preview Website"
+                  srcDoc={assembleSrcDoc()}
+                  sandbox="allow-scripts allow-same-origin"
+                  className="w-full h-full border-none bg-white"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+      </main>
+
+      {/* --- КАРКАС ИСПЛЫВАЮЩИХ ОКОН / МОДАЛОК --- */}
+
+      {/* 1. Модальное окно редактирования изображения */}
+      {selectedImg && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <ImageIcon className="w-5 h-5 text-blue-400" />
+                Замена изображения
+              </h3>
+              <button 
+                onClick={() => setSelectedImg(null)}
+                className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <p className="text-xs text-slate-400 mb-4">
+              Введите URL-адрес нового изображения. Вы также можете выбрать один из подготовленных бесплатных вариантов ниже.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Ссылка на изображение</label>
+                <input 
+                  type="text" 
+                  value={imageUrlInput}
+                  onChange={(e) => setImageUrlInput(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+                  placeholder="https://images.unsplash.com/..."
+                />
+              </div>
+
+              {/* Быстрые заготовки картинок */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-2">Готовые идеи (Unsplash):</label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button 
+                    onClick={() => setImageUrlInput('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80')}
+                    className="group relative aspect-video rounded overflow-hidden border border-slate-800 hover:border-blue-500 transition-colors"
+                  >
+                    <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=150&q=80" alt="Space" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    <span className="absolute bottom-0 inset-x-0 bg-slate-950/80 text-[9px] text-center py-0.5">Космос</span>
+                  </button>
+                  <button 
+                    onClick={() => setImageUrlInput('https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80')}
+                    className="group relative aspect-video rounded overflow-hidden border border-slate-800 hover:border-blue-500 transition-colors"
+                  >
+                    <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=150&q=80" alt="Tech" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    <span className="absolute bottom-0 inset-x-0 bg-slate-950/80 text-[9px] text-center py-0.5">Код</span>
+                  </button>
+                  <button 
+                    onClick={() => setImageUrlInput('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&q=80')}
+                    className="group relative aspect-video rounded overflow-hidden border border-slate-800 hover:border-blue-500 transition-colors"
+                  >
+                    <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=150&q=80" alt="Nature" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    <span className="absolute bottom-0 inset-x-0 bg-slate-950/80 text-[9px] text-center py-0.5">Природа</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Превью перед сохранением */}
+              {imageUrlInput && (
+                <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+                  <span className="block text-[10px] text-slate-400 mb-1">Предпросмотр новой картинки:</span>
+                  <img 
+                    src={imageUrlInput} 
+                    alt="Предпросмотр" 
+                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1594322436404-5a0526db4d13?auto=format&fit=crop&w=600&q=80'; }}
+                    className="rounded h-24 w-full object-cover" 
+                  />
+                </div>
+              )}
+
+              {/* Кнопки действий */}
+              <div className="flex gap-3 pt-2">
+                <button 
+                  onClick={() => setSelectedImg(null)}
+                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-lg text-sm font-semibold transition-colors"
+                >
+                  Отмена
+                </button>
+                <button 
+                  onClick={handleSaveImageChange}
+                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-blue-500/10"
+                >
+                  Обновить
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Модальное окно "Помощь / Инструкция" */}
+      {showHelpModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-lg shadow-2xl text-slate-300">
+            <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-blue-400" />
+                Как пользоваться конструктором?
+              </h3>
+              <button 
+                onClick={() => setShowHelpModal(false)}
+                className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-sm leading-relaxed">
+              <p>
+                Добро пожаловать в визуальный веб-конструктор! Вы можете создавать любые веб-страницы, используя HTML, CSS (включая Tailwind CSS библиотеки) и Javascript.
+              </p>
+
+              <div className="space-y-2">
+                <h4 className="font-bold text-white text-xs uppercase tracking-wider text-blue-400">⚡ Основные возможности:</h4>
+                <ul className="list-disc list-inside space-y-1.5 text-slate-400">
+                  <li><strong className="text-slate-200">Визуальное редактирование:</strong> В режиме "Редактор текста/фото" вы можете кликнуть по любому тексту прямо в превью-экране и просто вписать новое слово с клавиатуры.</li>
+                  <li><strong className="text-slate-200">Замена изображений:</strong> Кликните по любой картинке на превью-сайте. Откроется меню ввода нового URL-адреса картинки.</li>
+                  <li><strong className="text-slate-200">Двусторонняя синхронизация:</strong> Любые изменения, внесенные в визуальном редакторе, автоматически переписывают исходный код в левом редакторе!</li>
+                  <li><strong className="text-slate-200">Undo/Redo:</strong> Не бойтесь ломать код — стрелки отмены всегда помогут вам вернуться назад.</li>
+                  <li><strong className="text-slate-200">Экспорт чистого кода:</strong> При копировании или скачивании система полностью удаляет все маркеры визуального редактора, отдавая вам чистый, быстрый HTML-код.</li>
+                </ul>
+              </div>
+
+              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl text-xs text-blue-300">
+                💡 <strong>Совет:</strong> Все встроенные шаблоны работают на современном фреймворке <strong>Tailwind CSS</strong>, поэтому вы можете использовать любые классы Tailwind прямо в коде, и они сразу же отобразятся в превью!
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setShowHelpModal(false)}
+              className="w-full mt-6 bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded-lg text-sm font-semibold transition-colors"
+            >
+              Всё понятно, начать работу!
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* --- ИНДИКАТОРЫ И СООБЩЕНИЯ (ТОСТЫ) --- */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 shadow-2xl text-xs font-semibold animate-slide-up">
+          <div className={`w-2 h-2 rounded-full ${
+            toast.type === 'success' ? 'bg-emerald-500' : 'bg-blue-500'
+          }`}></div>
+          <span className="text-slate-200">{toast.message}</span>
+        </div>
+      )}
+
+    </div>
+  );
+}
