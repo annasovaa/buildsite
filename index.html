@@ -54,9 +54,9 @@
                 <div>
                     <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
                         РедакторКода.рф
-                        <span class="text-xs px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/30">v1.3 (Cloud)</span>
+                        <span class="text-xs px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/30">v1.5 (Direct PC Directory Save)</span>
                     </h1>
-                    <p class="text-xs text-slate-400">Интерактивный WYSIWYG конструктор сайтов с облачным автосохранением</p>
+                    <p class="text-xs text-slate-400">Интерактивный WYSIWYG конструктор сайтов с прямой записью в папки на ПК</p>
                 </div>
             </div>
         </div>
@@ -134,17 +134,29 @@
 
             <!-- Облачное сохранение, Undo / Redo и экспорт -->
             <div class="flex items-center gap-2">
-                <!-- Кнопка сохранения в облако -->
-                <div class="flex items-center gap-2 bg-slate-950 p-1.5 rounded-lg border border-slate-800/80">
-                    <button id="btn-cloud-save" onclick="saveProjectToCloud()" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/20 text-xs font-semibold transition-colors" title="Сохранить текущую версию в облако">
-                        <i data-lucide="cloud-upload" class="w-3.5 h-3.5"></i>
-                        Сохранить
+                
+                <!-- МЕНЕДЖЕР ФАЙЛОВ ПК И ОБЛАКА -->
+                <div class="flex items-center gap-1.5 bg-slate-950 p-1 py-1 rounded-lg border border-slate-800/80">
+                    <!-- КНОПКА ПРЯМОГО СОХРАНЕНИЯ В ПАПКУ ПК (НОВАЯ!) -->
+                    <button id="btn-direct-save" onclick="saveDirectToPCFolder()" class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md shadow-emerald-900/30" title="Мгновенно сохранить файлы в локальную папку buildsite на ПК">
+                        <i data-lucide="save-all" class="w-3.5 h-3.5"></i>
+                        Сохранить в папку ПК
                     </button>
-                    <label class="flex items-center gap-1 cursor-pointer select-none text-[10px] text-slate-400" title="Включить автосохранение при каждом изменении">
+
+                    <button onclick="openLocalFileModal()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors" title="Открыть менеджер файлов ПК и контрольных точек">
+                        <i data-lucide="folder-open" class="w-3.5 h-3.5 text-slate-400"></i>
+                        Файлы ПК
+                    </button>
+                    
+                    <button id="btn-cloud-save" onclick="saveProjectToCloud()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/10 text-xs font-semibold transition-colors" title="Сохранить текущую версию в облако">
+                        <i data-lucide="cloud-upload" class="w-3.5 h-3.5"></i>
+                        В Облако
+                    </button>
+
+                    <label class="flex items-center gap-1 cursor-pointer select-none text-[10px] text-slate-400 px-1" title="Включить автосохранение изменений локально и в облако">
                         <input type="checkbox" id="autosave-toggle" onchange="toggleAutosave(this.checked)" class="rounded bg-slate-900 border-slate-800 text-blue-600 focus:ring-blue-600 w-3 h-3">
                         <span>Авто</span>
                     </label>
-                    <span id="cloud-status" class="text-[9px] text-slate-500 font-mono hidden max-w-[90px] truncate">Соединение...</span>
                 </div>
 
                 <span class="text-slate-700">|</span>
@@ -160,7 +172,7 @@
                     <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                     Копировать HTML
                 </button>
-                <button onclick="handleDownloadFile()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-xs font-semibold text-white transition-colors shadow-lg shadow-blue-500/10" title="Скачать файл .html на устройство">
+                <button onclick="handleDownloadFile()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-xs font-semibold text-white transition-colors shadow-lg shadow-blue-500/10" title="Скачать готовый HTML на устройство через браузер">
                     <i data-lucide="download" class="w-3.5 h-3.5"></i>
                     Скачать .html
                 </button>
@@ -168,6 +180,25 @@
 
         </div>
     </section>
+
+    <!-- --- СТАТУС-БАР СОСТОЯНИЯ ДИСКА --- -->
+    <div class="bg-slate-950/70 border-b border-slate-800/50 px-6 py-1.5 text-[11px] text-slate-400 flex items-center justify-between shrink-0">
+        <span class="flex items-center gap-1.5">
+            <i data-lucide="database" class="w-3.5 h-3.5 text-emerald-400"></i>
+            Локальный статус: <strong id="local-status" class="text-emerald-400">Автономное хранилище готово</strong>
+        </span>
+        <!-- Кнопка привязки физической папки ПК -->
+        <span class="flex items-center gap-2">
+            <span id="linked-folder-badge" class="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <i data-lucide="folder-sync" class="w-3 h-3"></i>
+                Папка ПК: не привязана
+            </span>
+            <button onclick="linkLocalDirectory()" class="text-xs text-blue-400 hover:text-blue-300 font-semibold underline">
+                [Привязать папку buildsite]
+            </button>
+        </span>
+        <span id="cloud-status" class="text-[10px] text-slate-500 font-mono">Облако: не подключено</span>
+    </div>
 
     <!-- --- РАБОЧАЯ ОБЛАСТЬ --- -->
     <main class="flex-1 flex overflow-hidden relative">
@@ -222,7 +253,89 @@
 
       <!-- --- КАРКАС ИСПЛЫВАЮЩИХ ОКОН / МОДАЛОК --- -->
 
-      <!-- 1. Модальное окно редактирования изображения -->
+      <!-- 1. МОДАЛЬНОЕ ОКНО: ФАЙЛЫ ПК И ЛОКАЛЬНЫЕ СНИМКИ -->
+      <div id="local-file-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-2xl shadow-2xl">
+            <div class="flex items-center justify-between mb-5 border-b border-slate-800 pb-3">
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i data-lucide="folder-open" class="text-emerald-400 w-5 h-5"></i>
+                Управление файлами ПК & Резервными копиями
+              </h3>
+              <button onclick="closeLocalFileModal()" class="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Левая колонка: Загрузка / Выгрузка сессий с ПК -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <i data-lucide="file-symlink" class="w-3.5 h-3.5 text-blue-400"></i>
+                        Синхронизация с файлами на ПК
+                    </h4>
+
+                    <!-- Драг энд дроп контейнер -->
+                    <div id="drop-zone" class="border-2 border-dashed border-slate-800 hover:border-blue-500/50 bg-slate-950/50 hover:bg-slate-950 p-6 rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition-all">
+                        <i data-lucide="upload-cloud" class="w-8 h-8 text-blue-400 mb-2"></i>
+                        <span class="text-xs font-medium text-slate-200">Перетащите файл сюда</span>
+                        <span class="text-[10px] text-slate-500 mt-1">Поддерживаются .html сайта или .json сессии</span>
+                        <input type="file" id="file-picker-input" class="hidden" accept=".html,.htm,.json" onchange="handleFilePickerSelect(event)">
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="triggerFilePicker()" class="flex-1 py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5">
+                            <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                            Выбрать на ПК
+                        </button>
+                        <button onclick="exportSessionState()" class="flex-1 py-2 px-3 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5" title="Сохраняет HTML вместе со всей историей Undo/Redo">
+                            <i data-lucide="save" class="w-3.5 h-3.5"></i>
+                            Скачать Сессию (.json)
+                        </button>
+                    </div>
+
+                    <!-- Привязка физической папки ПК (Кнопка дублируется здесь для удобства) -->
+                    <div class="p-4 bg-slate-950 rounded-xl border border-slate-800/80 space-y-3">
+                        <span class="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+                            <i data-lucide="folder-sync" class="w-4 h-4 text-emerald-400"></i>
+                            Прямая папка синхронизации (buildsite)
+                        </span>
+                        <p class="text-[11px] text-slate-400 leading-normal">
+                            Привяжите любую папку на диске компьютера. Конструктор автоматически создаст в ней подпапку <strong class="text-emerald-400">buildsite</strong> и будет записывать код прямо туда.
+                        </p>
+                        <button onclick="linkLocalDirectory()" class="w-full py-2 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 rounded-lg text-xs font-bold transition-colors">
+                            Привязать/Изменить локальную папку
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Правая колонка: Внутренние версии и откат в IndexedDB -->
+                <div class="flex flex-col h-full border-l border-slate-800/80 pl-0 md:pl-6">
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between mb-3">
+                        <span class="flex items-center gap-1.5">
+                            <i data-lucide="history" class="w-3.5 h-3.5 text-emerald-400"></i>
+                            Локальные снимки (ПК)
+                        </span>
+                        <button onclick="createNewCheckpoint()" class="text-[11px] text-emerald-400 hover:underline flex items-center gap-1">
+                            <i data-lucide="plus" class="w-3 h-3"></i> Сделать снимок
+                        </button>
+                    </h4>
+
+                    <!-- Список снимков -->
+                    <div id="checkpoints-list" class="flex-1 overflow-y-auto max-h-[300px] space-y-2 pr-1 min-h-[120px]">
+                        <!-- Генерируется через JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Подвал модалки -->
+            <div class="mt-6 pt-4 border-t border-slate-800 flex justify-end">
+                <button onclick="closeLocalFileModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 px-5 rounded-lg text-xs font-semibold transition-colors">
+                    Закрыть менеджер
+                </button>
+            </div>
+          </div>
+      </div>
+
+      <!-- 2. Модальное окно редактирования изображения -->
       <div id="image-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
           <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <div class="flex items-center justify-between mb-4">
@@ -283,7 +396,7 @@
           </div>
       </div>
 
-      <!-- 2. Модальное окно "Помощь / Инструкция" -->
+      <!-- 3. Модальное окно "Помощь / Инструкция" -->
       <div id="help-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
           <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-lg shadow-2xl text-slate-300">
             <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
@@ -307,7 +420,7 @@
                   <li><strong class="text-slate-200">Визуальное редактирование:</strong> В режиме "Редактор текста/фото" вы можете кликнуть по любому тексту прямо в превью-экране и просто вписать новое слово с клавиатуры.</li>
                   <li><strong class="text-slate-200">Замена изображений:</strong> Кликните по любой картинке на превью-сайте. Откроется меню ввода нового URL-адреса картинки.</li>
                   <li><strong class="text-slate-200">Двусторонняя синхронизация:</strong> Любые изменения, внесенные в визуальном редакторе, автоматически переписывают исходный код в левом редакторе!</li>
-                  <li><strong class="text-slate-200">Облачное автосохранение:</strong> Теперь все ваши проекты и правки сохраняются в облаке и будут восстановлены при перезапуске!</li>
+                  <li><strong class="text-slate-200">Прямое сохранение на ПК (buildsite):</strong> Привяжите локальную директорию ПК и пишите код прямо на жесткий диск без скачиваний браузера!</li>
                   <li><strong class="text-slate-200">Undo/Redo:</strong> Не бойтесь ломать код — стрелки отмены всегда помогут вам вернуться назад.</li>
                   <li><strong class="text-slate-200">Экспорт чистого кода:</strong> При копировании или скачивании система полностью удаляет все маркеры визуального редактора, отдавая вам чистый, быстрый HTML-код.</li>
                 </ul>
@@ -330,7 +443,7 @@
           <span id="toast-text" class="text-slate-200"></span>
       </div>
 
-    <!-- --- JS ЛОГИКА ПРИЛОЖЕНИЯ С ПОДДЕРЖКОЙ FIREBASE --- -->
+    <!-- --- JS ЛОГИКА ПРИЛОЖЕНИЯ С ПОДДЕРЖКОЙ FIREBASE И INDEXEDDB --- -->
     <script type="module">
       import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
       import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
@@ -465,7 +578,7 @@
                 Создаю цифровые интерфейсы, которые <span class="text-zinc-400 underline decoration-zinc-300">влюбляют</span> в себя пользователей.
             </h1>
             <p class="text-zinc-600 text-lg mb-8 leading-relaxed">
-                Привет! Я продуктовый дизайнер с 5-летним опытом разработки мобильных приложений и веб-сервисов для ведущих стартапов.
+                Привет! Я продуктовый дизайнер с 5-летним опытом разработки мобильных приложений и веб-сервисов для ведущих стартапом.
             </p>
             <div class="flex gap-4">
                 <a href="#work" class="bg-zinc-900 hover:bg-zinc-800 text-white px-6 py-3 rounded-full font-medium transition-colors">
@@ -639,11 +752,17 @@
       let editModeActive = true;
       let autosaveEnabled = false;
 
+      // Дескриптор физической папки ПК (FileSystemDirectoryHandle)
+      let projectDirectoryHandle = null;
+
       // Firebase контекст
       let db = null;
       let auth = null;
       let user = null;
       const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+      // IndexedDB контекст для оффлайн сохранения
+      let indexedDBInstance = null;
 
       // История Undo/Redo
       let history = [TEMPLATES.saas];
@@ -683,6 +802,13 @@
 
       const helpModal = document.getElementById('help-modal');
       const cloudStatusText = document.getElementById('cloud-status');
+      const localStatusText = document.getElementById('local-status');
+      const linkedFolderBadge = document.getElementById('linked-folder-badge');
+
+      // Локальный Дроп-Менеджер файлов
+      const dropZone = document.getElementById('drop-zone');
+      const filePickerInput = document.getElementById('file-picker-input');
+      const localFileModal = document.getElementById('local-file-modal');
 
       // --- ИНИЦИАЛИЗАЦИЯ ПРИ ЗАПУСКЕ ---
       window.addEventListener('DOMContentLoaded', async () => {
@@ -708,27 +834,496 @@
           
           // Дебаунс обновления фрейма во избежание мерцания во время ввода
           clearTimeout(updateTimeout);
-          updateTimeout = setTimeout(() => {
+          updateTimeout = setTimeout(async () => {
             pushHistory(htmlCode);
             refreshIframe();
+            
+            // Оффлайн-сохранение в IndexedDB на ПК
+            await autoSaveToIndexedDB();
+
             if (autosaveEnabled) {
               saveProjectToCloudQuietly();
             }
           }, 400);
         });
 
+        // Инициализация Drag & Drop для импорта файлов на лету
+        initDragAndDrop();
+
+        // Инициализация IndexedDB для оффлайн снимков и кэша сессии
+        await initIndexedDB();
+
         // Инициализация Lucide иконок
         lucide.createIcons();
 
-        // Запуск интеграции с Firebase
+        // Запуск интеграции с Firebase (если настройки заданы)
         await initFirebase();
       });
+
+      // --- ИНИЦИАЛИЗАЦИЯ INDEXEDDB (ОФФЛАЙН ПК ДИСК) ---
+      function initIndexedDB() {
+        return new Promise((resolve) => {
+          const request = window.indexedDB.open('BuildsitePCStore', 3); // обновили версию для папки
+
+          request.onupgradeneeded = (e) => {
+            const dbInstance = e.target.result;
+            // Хранилище сессий
+            if (!dbInstance.objectStoreNames.contains('session')) {
+              dbInstance.createObjectStore('session', { keyPath: 'id' });
+            }
+            // Хранилище резервных копий (Снимков)
+            if (!dbInstance.objectStoreNames.contains('checkpoints')) {
+              dbInstance.createObjectStore('checkpoints', { keyPath: 'id', autoIncrement: true });
+            }
+          };
+
+          request.onsuccess = async (e) => {
+            indexedDBInstance = e.target.result;
+            localStatusText.innerText = "Автономное хранилище (ПК) готово";
+            
+            // Попытка загрузить последнюю сохраненную сессию из IndexedDB
+            await loadSessionFromIndexedDB();
+            // Попытка восстановить дескриптор папки
+            await restoreLinkedDirectory();
+            resolve();
+          };
+
+          request.onerror = () => {
+            localStatusText.innerText = "Внутренний диск недоступен";
+            localStatusText.className = "text-red-400";
+            resolve();
+          };
+        });
+      }
+
+      // Автосохранение сессии в IndexedDB
+      async function autoSaveToIndexedDB() {
+        if (!indexedDBInstance) return;
+        try {
+          const transaction = indexedDBInstance.transaction(['session'], 'readwrite');
+          const store = transaction.objectStore('session');
+          
+          await store.put({
+            id: 'current_session',
+            htmlCode: htmlCode,
+            history: history,
+            historyIndex: historyIndex,
+            updatedAt: new Date().toISOString()
+          });
+
+          localStatusText.innerText = `Автосохранение на ПК в ${new Date().toLocaleTimeString()}`;
+        } catch (err) {
+          console.warn("IndexedDB autosave failed:", err);
+        }
+      }
+
+      // Загрузка сессии из IndexedDB
+      function loadSessionFromIndexedDB() {
+        return new Promise((resolve) => {
+          if (!indexedDBInstance) return resolve();
+          
+          const transaction = indexedDBInstance.transaction(['session'], 'readonly');
+          const store = transaction.objectStore('session');
+          const request = store.get('current_session');
+
+          request.onsuccess = (e) => {
+            const data = e.target.result;
+            if (data && data.htmlCode) {
+              htmlCode = data.htmlCode;
+              history = data.history || [htmlCode];
+              historyIndex = data.historyIndex || 0;
+              
+              textarea.value = htmlCode;
+              updateLineNumbers();
+              refreshIframe();
+              updateHistoryButtons();
+              showToast('Прогресс восстановлен с локального хранилища ПК', 'info');
+            }
+            resolve();
+          };
+
+          request.onerror = () => resolve();
+        });
+      }
+
+      // --- ФИЗИЧЕСКОЕ ПОДКЛЮЧЕНИЕ ПАПКИ ПК (FILE SYSTEM ACCESS API) ---
+      
+      window.linkLocalDirectory = async function() {
+        if (!('showDirectoryPicker' in window)) {
+          showToast('Ваш браузер не поддерживает прямую работу с папками. Используйте Chrome, Edge или Opera!', 'error');
+          return;
+        }
+
+        try {
+          // Запрашиваем у пользователя выбор любой рабочей директории на ПК
+          const parentDirectoryHandle = await window.showDirectoryPicker({
+            mode: 'readwrite'
+          });
+
+          if (!parentDirectoryHandle) return;
+
+          // Автоматически получаем или создаем внутри выбранной папки подпапку "buildsite" (Как просил пользователь!)
+          projectDirectoryHandle = await parentDirectoryHandle.getDirectoryHandle('buildsite', { create: true });
+
+          // Сохраняем дескриптор в IndexedDB для вызова на будущее
+          const transaction = indexedDBInstance.transaction(['session'], 'readwrite');
+          const store = transaction.objectStore('session');
+          await store.put({
+            id: 'project_directory',
+            handle: parentDirectoryHandle // Сохраняем родительский дескриптор, чтобы иметь доступ к созданной папке
+          });
+
+          linkedFolderBadge.innerHTML = `
+            <i data-lucide="folder-check" class="w-3 h-3 text-emerald-400"></i>
+            Папка ПК: привязана (/buildsite)
+          `;
+          linkedFolderBadge.className = "flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+          lucide.createIcons();
+          
+          showToast('Успешно привязано! Папка "buildsite" найдена или автоматически создана.', 'success');
+        } catch (err) {
+          console.error("Link directory failed: ", err);
+          showToast('Доступ к папке не был разрешен', 'error');
+        }
+      };
+
+      // Восстановление привязки к папке при старте
+      async function restoreLinkedDirectory() {
+        if (!indexedDBInstance || !('showDirectoryPicker' in window)) return;
+
+        const transaction = indexedDBInstance.transaction(['session'], 'readonly');
+        const store = transaction.objectStore('session');
+        const request = store.get('project_directory');
+
+        request.onsuccess = async (e) => {
+          const record = e.target.result;
+          if (record && record.handle) {
+            const handle = record.handle;
+            
+            // Проверяем текущее разрешение (потребуется быстро кликнуть для авторизации)
+            const options = { mode: 'readwrite' };
+            if (await handle.queryPermission(options) === 'granted') {
+              try {
+                projectDirectoryHandle = await handle.getDirectoryHandle('buildsite', { create: true });
+                linkedFolderBadge.innerHTML = `
+                  <i data-lucide="folder-check" class="w-3 h-3 text-emerald-400"></i>
+                  Папка ПК: активна (/buildsite)
+                `;
+                linkedFolderBadge.className = "flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                lucide.createIcons();
+              } catch (err) {
+                console.warn("Restore subdirectory failed: ", err);
+              }
+            } else {
+              // Если требуется переавторизация (политика безопасности браузера)
+              linkedFolderBadge.innerHTML = `
+                <i data-lucide="folder-lock" class="w-3 h-3 text-amber-500"></i>
+                Папка: требуется авторизация
+              `;
+              linkedFolderBadge.className = "flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20";
+              lucide.createIcons();
+            }
+          }
+        };
+      }
+
+      // Функция мгновенного сохранения прямо в локальную папку ПК
+      window.saveDirectToPCFolder = async function() {
+        if (!projectDirectoryHandle) {
+          // Если папка еще не привязана - принудительно запустить процесс привязки
+          showToast('Сначала необходимо указать рабочую папку на ПК...', 'info');
+          await linkLocalDirectory();
+          if (!projectDirectoryHandle) return; // Пользователь отказался
+        }
+
+        try {
+          // Проверяем права на запись (вдруг сессия устарела)
+          const options = { mode: 'readwrite' };
+          if (await projectDirectoryHandle.queryPermission(options) !== 'granted') {
+            await projectDirectoryHandle.requestPermission(options);
+          }
+
+          const cleanHtml = removeInjectedScripts(htmlCode);
+
+          // Создаем файл index.html внутри папки buildsite (или перезаписываем существующий)
+          const fileHandle = await projectDirectoryHandle.getFileHandle('index.html', { create: true });
+          const writable = await fileHandle.createWritable();
+          
+          await writable.write(cleanHtml);
+          await writable.close();
+
+          showToast('Файл index.html успешно сохранен напрямую в папку buildsite!', 'success');
+          
+          const timeString = new Date().toLocaleTimeString();
+          localStatusText.innerText = `Прямое сохранение на ПК выполнено в ${timeString}`;
+        } catch (err) {
+          console.error("Direct write to PC folder failed: ", err);
+          showToast('Не удалось записать файл напрямую. Попробуйте перепривязать папку.', 'error');
+        }
+      };
+
+
+      // --- РАБОТА С ЛОКАЛЬНЫМИ СНИМКАМИ (CHECKPOINTS) В INDEXEDDB ---
+      
+      // Создание именованной резервной копии
+      window.createNewCheckpoint = async function() {
+        if (!indexedDBInstance) {
+          showToast('Локальное хранилище недоступно', 'error');
+          return;
+        }
+
+        const name = prompt("Введите краткое описание этого снимка (например: 'До верстки меню', 'Красный фон'):", `Снимок от ${new Date().toLocaleTimeString()}`);
+        if (name === null) return; // Отмена
+
+        const description = name.trim() || `Версия от ${new Date().toLocaleString()}`;
+
+        try {
+          const transaction = indexedDBInstance.transaction(['checkpoints'], 'readwrite');
+          const store = transaction.objectStore('checkpoints');
+          
+          await store.add({
+            description: description,
+            htmlCode: htmlCode,
+            history: history,
+            historyIndex: historyIndex,
+            createdAt: new Date().toLocaleString()
+          });
+
+          showToast('Локальный снимок версии успешно записан!', 'success');
+          renderCheckpointsList();
+        } catch (err) {
+          console.error("Failed to add checkpoint:", err);
+          showToast('Не удалось сохранить снимок', 'error');
+        }
+      };
+
+      // Рендеринг списка версий в модалке
+      async function renderCheckpointsList() {
+        const listContainer = document.getElementById('checkpoints-list');
+        if (!indexedDBInstance) {
+          listContainer.innerHTML = `<div class="text-xs text-slate-500 py-4 text-center">Хранилище недоступно</div>`;
+          return;
+        }
+
+        listContainer.innerHTML = '';
+
+        try {
+          const transaction = indexedDBInstance.transaction(['checkpoints'], 'readonly');
+          const store = transaction.objectStore('checkpoints');
+          const request = store.getAll();
+
+          request.onsuccess = (e) => {
+            const checkpoints = e.target.result;
+
+            if (checkpoints.length === 0) {
+              listContainer.innerHTML = `
+                <div class="h-full flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-800 rounded-xl bg-slate-950/20">
+                  <i data-lucide="history" class="w-6 h-6 text-slate-600 mb-2"></i>
+                  <span class="text-xs text-slate-400">Нет сохраненных снимков</span>
+                  <span class="text-[10px] text-slate-500 mt-1">Снимки позволяют откатываться к разным версиям верстки прямо на ПК.</span>
+                </div>
+              `;
+              lucide.createIcons();
+              return;
+            }
+
+            // Рендерим снизу вверх (новые сверху)
+            checkpoints.reverse().forEach((cp) => {
+              const item = document.createElement('div');
+              item.className = "p-3 bg-slate-950/80 rounded-xl border border-slate-800 flex flex-col justify-between gap-2 text-xs hover:border-slate-700 transition-colors";
+              item.innerHTML = `
+                <div class="flex-1 min-w-0">
+                  <div class="font-semibold text-slate-200 truncate" title="${cp.description}">${cp.description}</div>
+                  <div class="text-[9px] text-slate-500 font-mono mt-0.5">${cp.createdAt}</div>
+                </div>
+                <div class="flex gap-1.5 justify-end">
+                  <button onclick="restoreCheckpoint(${cp.id})" class="px-2 py-1 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/10 rounded font-medium transition-colors text-[10px]" title="Откатиться к этой версии">
+                    Восстановить
+                  </button>
+                  <button onclick="deleteCheckpoint(${cp.id})" class="p-1 bg-red-600/10 hover:bg-red-600/20 text-red-400 rounded transition-colors" title="Удалить">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              `;
+              listContainer.appendChild(item);
+            });
+
+            lucide.createIcons();
+          };
+        } catch (err) {
+          listContainer.innerHTML = `<div class="text-xs text-slate-500 py-4 text-center">Ошибка загрузки списка версий</div>`;
+        }
+      }
+
+      // Удаление снимка
+      window.deleteCheckpoint = function(id) {
+        if (!indexedDBInstance) return;
+        try {
+          const transaction = indexedDBInstance.transaction(['checkpoints'], 'readwrite');
+          const store = transaction.objectStore('checkpoints');
+          store.delete(id);
+          showToast('Снимок удален', 'info');
+          renderCheckpointsList();
+        } catch (err) {
+          showToast('Ошибка при удалении', 'error');
+        }
+      };
+
+      // Восстановление снимка
+      window.restoreCheckpoint = function(id) {
+        if (!indexedDBInstance) return;
+        try {
+          const transaction = indexedDBInstance.transaction(['checkpoints'], 'readonly');
+          const store = transaction.objectStore('checkpoints');
+          const request = store.get(id);
+
+          request.onsuccess = (e) => {
+            const cp = e.target.result;
+            if (cp && cp.htmlCode) {
+              htmlCode = cp.htmlCode;
+              history = cp.history || [htmlCode];
+              historyIndex = cp.historyIndex || 0;
+              
+              textarea.value = htmlCode;
+              updateLineNumbers();
+              refreshIframe();
+              updateHistoryButtons();
+              autoSaveToIndexedDB();
+
+              showToast(`Версия "${cp.description}" восстановлена!`, 'success');
+              closeLocalFileModal();
+            }
+          };
+        } catch (err) {
+          showToast('Не удалось восстановить снимок', 'error');
+        }
+      };
+
+
+      // --- ДРАГ ЭНД ДРОП И ИМПОРТ С ПК (DRAG & DROP / FILE ACCESS) ---
+      function initDragAndDrop() {
+        // Клик по дроп-зоне активирует скрытый файловый пикер
+        dropZone.addEventListener('click', () => {
+          filePickerInput.click();
+        });
+
+        // Эффекты наведения при перетаскивании
+        ['dragenter', 'dragover'].forEach(eventName => {
+          dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.className = "border-2 border-dashed border-blue-500 bg-slate-950 p-6 rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition-all scale-[1.02]";
+          }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+          dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.className = "border-2 border-dashed border-slate-800 hover:border-blue-500/50 bg-slate-950/50 hover:bg-slate-950 p-6 rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition-all";
+          }, false);
+        });
+
+        // Обработка бросания файла
+        dropZone.addEventListener('drop', (e) => {
+          const dt = e.dataTransfer;
+          const files = dt.files;
+          if (files.length > 0) {
+            handleFileImport(files[0]);
+          }
+        });
+      }
+
+      window.triggerFilePicker = function() {
+        filePickerInput.click();
+      };
+
+      window.handleFilePickerSelect = function(e) {
+        const files = e.target.files;
+        if (files.length > 0) {
+          handleFileImport(files[0]);
+        }
+      };
+
+      // Главный процессор импортируемого файла (.html или .json)
+      function handleFileImport(file) {
+        const reader = new FileReader();
+
+        if (file.name.endsWith('.json')) {
+          // Чтение полной сессии разработчика со стеком Undo/Redo
+          reader.onload = function(e) {
+            try {
+              const data = JSON.parse(e.target.result);
+              if (data.htmlCode) {
+                htmlCode = data.htmlCode;
+                history = data.history || [htmlCode];
+                historyIndex = data.historyIndex || 0;
+                
+                textarea.value = htmlCode;
+                updateLineNumbers();
+                refreshIframe();
+                updateHistoryButtons();
+                autoSaveToIndexedDB();
+                
+                showToast(`Сессия проекта "${file.name}" восстановлена на 100%!`, 'success');
+                closeLocalFileModal();
+              } else {
+                showToast('Невалидный файл сессии JSON', 'error');
+              }
+            } catch(err) {
+              showToast('Не удалось разобрать JSON-файл', 'error');
+            }
+          };
+          reader.readAsText(file);
+        } else if (file.name.endsWith('.html') || file.name.endsWith('.htm')) {
+          // Чтение обычного HTML
+          reader.onload = function(e) {
+            htmlCode = e.target.result;
+            textarea.value = htmlCode;
+            updateLineNumbers();
+            pushHistory(htmlCode);
+            refreshIframe();
+            autoSaveToIndexedDB();
+
+            showToast(`HTML-файл "${file.name}" успешно импортирован!`, 'success');
+            closeLocalFileModal();
+          };
+          reader.readAsText(file);
+        } else {
+          showToast('Формат не поддерживается. Перетащите .html или .json!', 'error');
+        }
+      }
+
+      // Экспорт полной сессии со всей историей в JSON
+      window.exportSessionState = function() {
+        try {
+          const sessionData = {
+            htmlCode: htmlCode,
+            history: history,
+            historyIndex: historyIndex,
+            exportDate: new Date().toLocaleString(),
+            info: "Buildsite Session Backup"
+          };
+
+          const blob = new Blob([JSON.stringify(sessionData, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `buildsite-session-${Date.now()}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showToast('Файл рабочей сессии (.json) скачан на ваш ПК', 'success');
+        } catch (err) {
+          showToast('Ошибка при экспорте сессии', 'error');
+        }
+      };
 
       // --- ИНИЦИАЛИЗАЦИЯ FIREBASE (ОБЛАЧНОЕ СОХРАНЕНИЕ) ---
       async function initFirebase() {
         if (typeof __firebase_config === 'undefined') {
-          cloudStatusText.innerText = "Облако недоступно";
-          cloudStatusText.classList.remove('hidden');
+          cloudStatusText.innerText = "Облако: недоступно";
           return;
         }
 
@@ -738,8 +1333,7 @@
           auth = getAuth(app);
           db = getFirestore(app);
 
-          cloudStatusText.innerText = "Подключение...";
-          cloudStatusText.classList.remove('hidden');
+          cloudStatusText.innerText = "Облако: подключение...";
 
           // Авторизация (Правило 3)
           if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -751,17 +1345,16 @@
           onAuthStateChanged(auth, (u) => {
             user = u;
             if (user) {
-              cloudStatusText.innerText = "Авторизован";
+              cloudStatusText.innerText = "Облако: авторизован";
               showToast('Облачное соединение активно', 'info');
               loadProjectFromCloud();
             } else {
-              cloudStatusText.innerText = "Ошибка входа";
+              cloudStatusText.innerText = "Облако: ошибка авторизации";
             }
           });
         } catch (error) {
           console.error("Firebase initialization failed:", error);
-          cloudStatusText.innerText = "Ошибка облака";
-          cloudStatusText.classList.remove('hidden');
+          cloudStatusText.innerText = "Облако: ошибка конфигурации";
         }
       }
 
@@ -781,13 +1374,14 @@
               updateLineNumbers();
               pushHistory(htmlCode);
               refreshIframe();
+              autoSaveToIndexedDB();
               
               const dateText = data.updatedAt ? new Date(data.updatedAt).toLocaleTimeString() : 'ранее';
-              cloudStatusText.innerText = `Сохранено в ${dateText}`;
+              cloudStatusText.innerText = `Облако: синхра ${dateText}`;
               showToast('Проект успешно загружен из облака!', 'success');
             }
           } else {
-            cloudStatusText.innerText = "Нет сохранений";
+            cloudStatusText.innerText = "Облако: нет снимков";
           }
         } catch (err) {
           console.error("Cloud load failed:", err);
@@ -804,7 +1398,7 @@
 
         const saveBtn = document.getElementById('btn-cloud-save');
         saveBtn.disabled = true;
-        cloudStatusText.innerText = "Сохранение...";
+        cloudStatusText.innerText = "Облако: отправка...";
 
         try {
           const projectDocRef = doc(db, 'artifacts', appId, 'users', user.uid, 'projects', 'current');
@@ -820,7 +1414,7 @@
           showToast('Проект сохранен в облако!', 'success');
         } catch (err) {
           console.error("Cloud save failed:", err);
-          cloudStatusText.innerText = "Ошибка сохранения";
+          cloudStatusText.innerText = "Облако: ошибка";
           showToast('Ошибка при синхронизации с облаком', 'error');
         } finally {
           saveBtn.disabled = false;
@@ -840,7 +1434,7 @@
           });
 
           const timeString = new Date().toLocaleTimeString();
-          cloudStatusText.innerText = `Авто: ${timeString}`;
+          cloudStatusText.innerText = `Облако: авто ${timeString}`;
         } catch (err) {
           console.error("Autosave failed quietly:", err);
         }
@@ -875,6 +1469,7 @@
           refreshIframe();
           showToast('Изменение отменено', 'info');
           updateHistoryButtons();
+          autoSaveToIndexedDB();
           if (autosaveEnabled) saveProjectToCloudQuietly();
         }
       }
@@ -888,6 +1483,7 @@
           refreshIframe();
           showToast('Восстановлено предыдущее действие', 'info');
           updateHistoryButtons();
+          autoSaveToIndexedDB();
           if (autosaveEnabled) saveProjectToCloudQuietly();
         }
       }
@@ -918,6 +1514,7 @@
           pushHistory(htmlCode);
           refreshIframe();
           showToast(`Шаблон "${key.toUpperCase()}" успешно загружен!`, 'success');
+          autoSaveToIndexedDB();
           if (autosaveEnabled) saveProjectToCloudQuietly();
         }
       }
@@ -1032,7 +1629,7 @@
       }
 
       // --- ПРИЕМ СООБЩЕНИЙ ИЗ IFRAME ---
-      window.addEventListener('message', (event) => {
+      window.addEventListener('message', async (event) => {
         const data = event.data;
         if (!data) return;
 
@@ -1042,6 +1639,9 @@
           textarea.value = sanitizedHtml;
           updateLineNumbers();
           pushHistory(sanitizedHtml);
+          
+          await autoSaveToIndexedDB();
+
           if (autosaveEnabled) {
             saveProjectToCloudQuietly();
           }
@@ -1091,7 +1691,7 @@
           btnLiveMode.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all text-slate-400 hover:text-white";
           modeStatusText.innerHTML = `
             <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-            <strong class="text-emerald-400">Режим редактора:</strong> Кликните на любой text для изменения, либо кликните на картинку для замены URL.
+            <strong class="text-emerald-400">Режим редактора:</strong> Кликните на любой текст для изменения, либо кликните на картинку для замены URL.
           `;
           showToast('Включен визуальный редактор. Нажмите на любой текст или картинку.', 'info');
         } else {
@@ -1212,6 +1812,16 @@
         closeImageModal();
       }
 
+      // --- УПРАВЛЕНИЕ ОКНОМ ФАЙЛОВ ПК ---
+      window.openLocalFileModal = function() {
+        localFileModal.className = "fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4";
+        renderCheckpointsList();
+      };
+
+      window.closeLocalFileModal = function() {
+        localFileModal.className = "fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4";
+      };
+
       // --- ИНСТРУКЦИЯ (HELP MODAL) ---
       function toggleHelpModal(show) {
         if (show) {
@@ -1242,7 +1852,7 @@
         }, 3000);
       }
 
-      // --- ПРИВЯЗКА К WINDOW (ДЛЯ ОБЕСПЕЧЕНИЯ ДОСТУПА ИЗ HTML) ---
+      // --- ПРИВЯЗКА К WINDOW ---
       window.loadTemplate = loadTemplate;
       window.toggleHelpModal = toggleHelpModal;
       window.switchTab = switchTab;
