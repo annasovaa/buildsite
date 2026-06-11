@@ -54,9 +54,9 @@
                 <div>
                     <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
                         РедакторКода.рф
-                        <span class="text-xs px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/30">v1.2 (HTML)</span>
+                        <span class="text-xs px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/30">v1.3 (Cloud)</span>
                     </h1>
-                    <p class="text-xs text-slate-400">Интерактивный WYSIWYG конструктор сайтов на HTML5</p>
+                    <p class="text-xs text-slate-400">Интерактивный WYSIWYG конструктор сайтов с облачным автосохранением</p>
                 </div>
             </div>
         </div>
@@ -132,8 +132,23 @@
                 </button>
             </div>
 
-            <!-- История Undo / Redo и экспорт -->
+            <!-- Облачное сохранение, Undo / Redo и экспорт -->
             <div class="flex items-center gap-2">
+                <!-- Кнопка сохранения в облако -->
+                <div class="flex items-center gap-2 bg-slate-950 p-1.5 rounded-lg border border-slate-800/80">
+                    <button id="btn-cloud-save" onclick="saveProjectToCloud()" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/20 text-xs font-semibold transition-colors" title="Сохранить текущую версию в облако">
+                        <i data-lucide="cloud-upload" class="w-3.5 h-3.5"></i>
+                        Сохранить
+                    </button>
+                    <label class="flex items-center gap-1 cursor-pointer select-none text-[10px] text-slate-400" title="Включить автосохранение при каждом изменении">
+                        <input type="checkbox" id="autosave-toggle" onchange="toggleAutosave(this.checked)" class="rounded bg-slate-900 border-slate-800 text-blue-600 focus:ring-blue-600 w-3 h-3">
+                        <span>Авто</span>
+                    </label>
+                    <span id="cloud-status" class="text-[9px] text-slate-500 font-mono hidden max-w-[90px] truncate">Соединение...</span>
+                </div>
+
+                <span class="text-slate-700">|</span>
+
                 <button id="btn-undo" onclick="handleUndo()" disabled class="p-2 rounded-lg bg-slate-950 border border-slate-800 hover:bg-slate-800 disabled:opacity-40 transition-all text-slate-300" title="Шаг назад (Undo)">
                     <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
                 </button>
@@ -292,6 +307,7 @@
                   <li><strong class="text-slate-200">Визуальное редактирование:</strong> В режиме "Редактор текста/фото" вы можете кликнуть по любому тексту прямо в превью-экране и просто вписать новое слово с клавиатуры.</li>
                   <li><strong class="text-slate-200">Замена изображений:</strong> Кликните по любой картинке на превью-сайте. Откроется меню ввода нового URL-адреса картинки.</li>
                   <li><strong class="text-slate-200">Двусторонняя синхронизация:</strong> Любые изменения, внесенные в визуальном редакторе, автоматически переписывают исходный код в левом редакторе!</li>
+                  <li><strong class="text-slate-200">Облачное автосохранение:</strong> Теперь все ваши проекты и правки сохраняются в облаке и будут восстановлены при перезапуске!</li>
                   <li><strong class="text-slate-200">Undo/Redo:</strong> Не бойтесь ломать код — стрелки отмены всегда помогут вам вернуться назад.</li>
                   <li><strong class="text-slate-200">Экспорт чистого кода:</strong> При копировании или скачивании система полностью удаляет все маркеры визуального редактора, отдавая вам чистый, быстрый HTML-код.</li>
                 </ul>
@@ -314,8 +330,12 @@
           <span id="toast-text" class="text-slate-200"></span>
       </div>
 
-    <!-- --- JS ЛОГИКА ПРИЛОЖЕНИЯ --- -->
-    <script>
+    <!-- --- JS ЛОГИКА ПРИЛОЖЕНИЯ С ПОДДЕРЖКОЙ FIREBASE --- -->
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+      import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+      import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
       // --- ШАБЛОНЫ САЙТОВ ---
       const TEMPLATES = {
         saas: `<!DOCTYPE html>
@@ -617,6 +637,13 @@
       let currentTab = 'split'; // 'editor', 'preview', 'split'
       let responsiveMode = 'desktop'; // 'desktop', 'tablet', 'mobile'
       let editModeActive = true;
+      let autosaveEnabled = false;
+
+      // Firebase контекст
+      let db = null;
+      let auth = null;
+      let user = null;
+      const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
       // История Undo/Redo
       let history = [TEMPLATES.saas];
@@ -655,9 +682,10 @@
       const modalImgPreview = document.getElementById('modal-img-preview');
 
       const helpModal = document.getElementById('help-modal');
+      const cloudStatusText = document.getElementById('cloud-status');
 
       // --- ИНИЦИАЛИЗАЦИЯ ПРИ ЗАПУСКЕ ---
-      window.addEventListener('DOMContentLoaded', () => {
+      window.addEventListener('DOMContentLoaded', async () => {
         // Устанавливаем стартовый код в textarea
         textarea.value = htmlCode;
         
@@ -683,14 +711,151 @@
           updateTimeout = setTimeout(() => {
             pushHistory(htmlCode);
             refreshIframe();
+            if (autosaveEnabled) {
+              saveProjectToCloudQuietly();
+            }
           }, 400);
         });
 
         // Инициализация Lucide иконок
         lucide.createIcons();
+
+        // Запуск интеграции с Firebase
+        await initFirebase();
       });
 
-      // --- УПРАВЛЕНИЕ ИСТОРИЕЙ ---
+      // --- ИНИЦИАЛИЗАЦИЯ FIREBASE (ОБЛАЧНОЕ СОХРАНЕНИЕ) ---
+      async function initFirebase() {
+        if (typeof __firebase_config === 'undefined') {
+          cloudStatusText.innerText = "Облако недоступно";
+          cloudStatusText.classList.remove('hidden');
+          return;
+        }
+
+        try {
+          const firebaseConfig = JSON.parse(__firebase_config);
+          const app = initializeApp(firebaseConfig);
+          auth = getAuth(app);
+          db = getFirestore(app);
+
+          cloudStatusText.innerText = "Подключение...";
+          cloudStatusText.classList.remove('hidden');
+
+          // Авторизация (Правило 3)
+          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            await signInWithCustomToken(auth, __initial_auth_token);
+          } else {
+            await signInAnonymously(auth);
+          }
+
+          onAuthStateChanged(auth, (u) => {
+            user = u;
+            if (user) {
+              cloudStatusText.innerText = "Авторизован";
+              showToast('Облачное соединение активно', 'info');
+              loadProjectFromCloud();
+            } else {
+              cloudStatusText.innerText = "Ошибка входа";
+            }
+          });
+        } catch (error) {
+          console.error("Firebase initialization failed:", error);
+          cloudStatusText.innerText = "Ошибка облака";
+          cloudStatusText.classList.remove('hidden');
+        }
+      }
+
+      // --- ЗАГРУЗКА ИЗ ОБЛАКА ---
+      async function loadProjectFromCloud() {
+        if (!db || !auth || !user) return;
+        try {
+          // Путь согласно Правилу 1 (Private User Path)
+          const projectDocRef = doc(db, 'artifacts', appId, 'users', user.uid, 'projects', 'current');
+          const snap = await getDoc(projectDocRef);
+          
+          if (snap.exists()) {
+            const data = snap.data();
+            if (data.htmlCode) {
+              htmlCode = data.htmlCode;
+              textarea.value = htmlCode;
+              updateLineNumbers();
+              pushHistory(htmlCode);
+              refreshIframe();
+              
+              const dateText = data.updatedAt ? new Date(data.updatedAt).toLocaleTimeString() : 'ранее';
+              cloudStatusText.innerText = `Сохранено в ${dateText}`;
+              showToast('Проект успешно загружен из облака!', 'success');
+            }
+          } else {
+            cloudStatusText.innerText = "Нет сохранений";
+          }
+        } catch (err) {
+          console.error("Cloud load failed:", err);
+          showToast('Не удалось восстановить данные из облака', 'error');
+        }
+      }
+
+      // --- СОХРАНЕНИЕ В ОБЛАКО (РУЧНОЕ) ---
+      async function saveProjectToCloud() {
+        if (!db || !auth || !user) {
+          showToast('Облачное сохранение недоступно в этой среде', 'error');
+          return;
+        }
+
+        const saveBtn = document.getElementById('btn-cloud-save');
+        saveBtn.disabled = true;
+        cloudStatusText.innerText = "Сохранение...";
+
+        try {
+          const projectDocRef = doc(db, 'artifacts', appId, 'users', user.uid, 'projects', 'current');
+          const timestamp = new Date().toISOString();
+          
+          await setDoc(projectDocRef, {
+            htmlCode: htmlCode,
+            updatedAt: timestamp
+          });
+
+          const timeString = new Date().toLocaleTimeString();
+          cloudStatusText.innerText = `Облако: ${timeString}`;
+          showToast('Проект сохранен в облако!', 'success');
+        } catch (err) {
+          console.error("Cloud save failed:", err);
+          cloudStatusText.innerText = "Ошибка сохранения";
+          showToast('Ошибка при синхронизации с облаком', 'error');
+        } finally {
+          saveBtn.disabled = false;
+        }
+      }
+
+      // --- СОХРАНЕНИЕ В ОБЛАКО (ТИХОЕ / АВТОМАТИЧЕСКОЕ) ---
+      async function saveProjectToCloudQuietly() {
+        if (!db || !auth || !user) return;
+        try {
+          const projectDocRef = doc(db, 'artifacts', appId, 'users', user.uid, 'projects', 'current');
+          const timestamp = new Date().toISOString();
+          
+          await setDoc(projectDocRef, {
+            htmlCode: htmlCode,
+            updatedAt: timestamp
+          });
+
+          const timeString = new Date().toLocaleTimeString();
+          cloudStatusText.innerText = `Авто: ${timeString}`;
+        } catch (err) {
+          console.error("Autosave failed quietly:", err);
+        }
+      }
+
+      // --- ПЕРЕКЛЮЧЕНИЕ АВТОСОХРАНЕНИЯ ---
+      function toggleAutosave(checked) {
+        autosaveEnabled = checked;
+        showToast(autosaveEnabled ? 'Автосохранение включено' : 'Автосохранение отключено', 'info');
+        if (autosaveEnabled) {
+          saveProjectToCloudQuietly();
+        }
+      }
+
+      // --- УПРАВЛЕНИЕ ИСТОРИЕЙ (UNDO/REDO) ---
       function pushHistory(newCode) {
         if (history[historyIndex] === newCode) return;
         
@@ -710,6 +875,7 @@
           refreshIframe();
           showToast('Изменение отменено', 'info');
           updateHistoryButtons();
+          if (autosaveEnabled) saveProjectToCloudQuietly();
         }
       }
 
@@ -722,6 +888,7 @@
           refreshIframe();
           showToast('Восстановлено предыдущее действие', 'info');
           updateHistoryButtons();
+          if (autosaveEnabled) saveProjectToCloudQuietly();
         }
       }
 
@@ -751,6 +918,7 @@
           pushHistory(htmlCode);
           refreshIframe();
           showToast(`Шаблон "${key.toUpperCase()}" успешно загружен!`, 'success');
+          if (autosaveEnabled) saveProjectToCloudQuietly();
         }
       }
 
@@ -869,12 +1037,14 @@
         if (!data) return;
 
         if (data.type === 'HTML_UPDATED') {
-          // Очищаем код от внедренных инъекций перед сохранением обратно в редактор
           let sanitizedHtml = removeInjectedScripts(data.html);
           htmlCode = sanitizedHtml;
           textarea.value = sanitizedHtml;
           updateLineNumbers();
           pushHistory(sanitizedHtml);
+          if (autosaveEnabled) {
+            saveProjectToCloudQuietly();
+          }
         } else if (data.type === 'EDIT_IMAGE') {
           openImageModal(data.imgId, data.currentSrc);
         }
@@ -921,7 +1091,7 @@
           btnLiveMode.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all text-slate-400 hover:text-white";
           modeStatusText.innerHTML = `
             <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-            <strong class="text-emerald-400">Режим редактора:</strong> Кликните на любой текст для изменения, либо кликните на картинку для замены URL.
+            <strong class="text-emerald-400">Режим редактора:</strong> Кликните на любой text для изменения, либо кликните на картинку для замены URL.
           `;
           showToast('Включен визуальный редактор. Нажмите на любой текст или картинку.', 'info');
         } else {
@@ -1071,6 +1241,23 @@
           toastContainer.className = "fixed bottom-6 right-6 z-50 hidden items-center gap-2 px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 shadow-2xl text-xs font-semibold animate-slide-up";
         }, 3000);
       }
+
+      // --- ПРИВЯЗКА К WINDOW (ДЛЯ ОБЕСПЕЧЕНИЯ ДОСТУПА ИЗ HTML) ---
+      window.loadTemplate = loadTemplate;
+      window.toggleHelpModal = toggleHelpModal;
+      window.switchTab = switchTab;
+      window.toggleEditMode = toggleEditMode;
+      window.setResponsiveMode = setResponsiveMode;
+      window.handleUndo = handleUndo;
+      window.handleRedo = handleRedo;
+      window.handleCopyCode = handleCopyCode;
+      window.handleDownloadFile = handleDownloadFile;
+      window.closeImageModal = closeImageModal;
+      window.handleSaveImageChange = handleSaveImageChange;
+      window.setImageInputUrl = setImageInputUrl;
+      window.saveProjectToCloud = saveProjectToCloud;
+      window.toggleAutosave = toggleAutosave;
+
     </script>
 </body>
 </html>
